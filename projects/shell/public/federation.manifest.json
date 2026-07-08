@@ -1,0 +1,5 @@
+{
+  "accounts": "http://localhost:4201/remoteEntry.json",
+  "payments": "http://localhost:4202/remoteEntry.json",
+  "notifications": "http://localhost:4203/remoteEntry.json"
+}

@@ -1,0 +1,25 @@
+[
+  {
+    "id": "pay-001",
+    "sourceAccountId": "acc-001",
+    "beneficiaryId": "ben-001",
+    "beneficiaryName": "Servicios Cloud SAC",
+    "amount": 325.8,
+    "currency": "USD",
+    "status": "CONFIRMED",
+    "description": "Pago de servicios cloud",
+    "createdAt": "2026-07-01T14:20:00.000Z",
+    "confirmedAt": "2026-07-01T14:22:00.000Z"
+  },
+  {
+    "id": "pay-002",
+    "sourceAccountId": "acc-001",
+    "beneficiaryId": "ben-002",
+    "beneficiaryName": "Proveedor Data Hub",
+    "amount": 980.0,
+    "currency": "USD",
+    "status": "INITIATED",
+    "description": "Reserva de pago",
+    "createdAt": "2026-07-04T09:15:00.000Z"
+  }
+]

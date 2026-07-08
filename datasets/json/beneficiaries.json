@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ben-001",
+    "alias": "Servicios Cloud SAC",
+    "bankName": "Mock Bank",
+    "accountNumber": "003-77889911",
+    "currency": "USD",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "ben-002",
+    "alias": "Proveedor Data Hub",
+    "bankName": "Local Bank",
+    "accountNumber": "191-44556677",
+    "currency": "PEN",
+    "status": "ACTIVE"
+  }
+]

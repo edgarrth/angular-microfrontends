@@ -1,0 +1,7 @@
+node_modules
+backends/*/node_modules
+dist
+coverage
+.git
+*.zip
+.DS_Store

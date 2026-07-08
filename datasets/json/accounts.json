@@ -1,0 +1,20 @@
+[
+  {
+    "id": "acc-001",
+    "alias": "Cuenta principal USD",
+    "type": "CHECKING",
+    "currency": "USD",
+    "availableBalance": 18450.75,
+    "ledgerBalance": 19500.75,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "acc-002",
+    "alias": "Cuenta operativa PEN",
+    "type": "SAVINGS",
+    "currency": "PEN",
+    "availableBalance": 38200.5,
+    "ledgerBalance": 38200.5,
+    "status": "ACTIVE"
+  }
+]

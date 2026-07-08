@@ -1,0 +1,9 @@
+[
+  {
+    "id": "usr-001",
+    "username": "edgar",
+    "password": "demo",
+    "displayName": "Edgar Rodriguez",
+    "roles": ["PAYMENT_OPERATOR", "PAYMENT_APPROVER"]
+  }
+]

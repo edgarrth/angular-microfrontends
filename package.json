@@ -1,0 +1,78 @@
+{
+  "name": "payment-processing-poc",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "build:shared": "ng build shared",
+    "build:shell": "ng build shell --configuration production",
+    "build:accounts-mfe": "ng build accounts --configuration production",
+    "build:payments-mfe": "ng build payments --configuration production",
+    "build:notifications-mfe": "ng build notifications --configuration production",
+    "build:frontends": "npm run build:shared && npm run build:accounts-mfe && npm run build:payments-mfe && npm run build:notifications-mfe && npm run build:shell",
+    "build:api:authentication": "npm --prefix backends/authentication run build",
+    "build:api:accounts": "npm --prefix backends/accounts run build",
+    "build:api:payments": "npm --prefix backends/payments run build",
+    "build:api:notifications": "npm --prefix backends/notifications run build",
+    "build:apis": "npm run build:api:authentication && npm run build:api:accounts && npm run build:api:payments && npm run build:api:notifications",
+    "build:all": "npm run build:frontends && npm run build:apis",
+    "start:shell": "ng serve shell --port 4200",
+    "start:accounts-mfe": "ng serve accounts --port 4201",
+    "start:payments-mfe": "ng serve payments --port 4202",
+    "start:notifications-mfe": "ng serve notifications --port 4203",
+    "start:api:authentication": "DATASET_PATH=./datasets/json PORT=3000 npm --prefix backends/authentication run dev",
+    "start:api:accounts": "DATASET_PATH=./datasets/json PORT=3001 npm --prefix backends/accounts run dev",
+    "start:api:payments": "DATASET_PATH=./datasets/json PORT=3002 npm --prefix backends/payments run dev",
+    "start:api:notifications": "DATASET_PATH=./datasets/json PORT=3003 npm --prefix backends/notifications run dev",
+    "test": "ng test --watch=false --browsers=ChromeHeadless",
+    "docker:up": "docker compose -f infrastructure/docker-compose.yml up --build",
+    "docker:down": "docker compose -f infrastructure/docker-compose.yml down -v",
+    "test:api:authentication": "npm --prefix backends/authentication test",
+    "test:api:accounts": "npm --prefix backends/accounts test",
+    "test:api:payments": "npm --prefix backends/payments test",
+    "test:api:notifications": "npm --prefix backends/notifications test",
+    "test:apis": "npm run test:api:authentication && npm run test:api:accounts && npm run test:api:payments && npm run test:api:notifications"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^21.2.17",
+    "@angular/common": "^21.2.17",
+    "@angular/compiler": "^21.2.17",
+    "@angular/core": "^21.2.17",
+    "@angular/forms": "^21.2.17",
+    "@angular/platform-browser": "^21.2.17",
+    "@angular/router": "^21.2.17",
+    "@softarc/native-federation-node": "^3.5.5",
+    "es-module-shims": "^1.5.12",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.16.2"
+  },
+  "devDependencies": {
+    "@angular-architects/native-federation": "^21.2.5",
+    "@angular-devkit/build-angular": "^21.2.18",
+    "@angular/build": "^21.2.18",
+    "@angular/cli": "^21.2.18",
+    "@angular/compiler-cli": "^21.2.17",
+    "@types/jasmine": "~5.1.0",
+    "jasmine-core": "~5.9.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "ng-packagr": "^21.2.5",
+    "typescript": "~5.9.3"
+  }
+}

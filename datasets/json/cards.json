@@ -1,0 +1,16 @@
+[
+  {
+    "id": "card-001",
+    "accountId": "acc-001",
+    "brand": "Diners Mock",
+    "maskedNumber": "**** **** **** 4488",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "card-002",
+    "accountId": "acc-001",
+    "brand": "Visa Mock",
+    "maskedNumber": "**** **** **** 7711",
+    "status": "BLOCKED"
+  }
+]

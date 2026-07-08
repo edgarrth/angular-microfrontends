@@ -1,0 +1,9 @@
+{
+  "data": {
+    "paymentId": "pay-<generated>",
+    "status": "INITIATED",
+    "authorizationCode": "123456"
+  },
+  "correlationId": "<uuid>",
+  "generatedAt": "2026-07-07T00:00:00.000Z"
+}

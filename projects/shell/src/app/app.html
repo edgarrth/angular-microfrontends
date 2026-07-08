@@ -1,0 +1,13 @@
+<header class="topbar">
+  <a class="brand" routerLink="/">Payment Processing PoC</a>
+  <nav>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a routerLink="/accounts" routerLinkActive="active">Accounts</a>
+    <a routerLink="/payments" routerLinkActive="active">Payments</a>
+    <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
+  </nav>
+  <span class="user">{{ session()?.displayName ?? 'Guest' }}</span>
+</header>
+<main class="shell">
+  <router-outlet />
+</main>

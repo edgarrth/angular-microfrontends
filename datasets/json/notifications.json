@@ -1,0 +1,16 @@
+[
+  {
+    "id": "not-001",
+    "title": "Pago confirmado",
+    "message": "El pago pay-001 fue confirmado correctamente.",
+    "read": false,
+    "createdAt": "2026-07-01T14:22:10.000Z"
+  },
+  {
+    "id": "not-002",
+    "title": "Beneficiario activo",
+    "message": "Servicios Cloud SAC está disponible para nuevos pagos.",
+    "read": true,
+    "createdAt": "2026-07-02T10:00:00.000Z"
+  }
+]

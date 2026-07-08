@@ -1,0 +1,84 @@
+services:
+  shell:
+    build:
+      context: ..
+      dockerfile: infrastructure/frontend.Dockerfile
+      args:
+        APP_NAME: shell
+    ports:
+      - "4200:80"
+    depends_on:
+      - accounts-mfe
+      - payments-mfe
+      - notifications-mfe
+      - authentication-api
+      - accounts-api
+      - payments-api
+      - notifications-api
+
+  accounts-mfe:
+    build:
+      context: ..
+      dockerfile: infrastructure/frontend.Dockerfile
+      args:
+        APP_NAME: accounts
+    ports:
+      - "4201:80"
+
+  payments-mfe:
+    build:
+      context: ..
+      dockerfile: infrastructure/frontend.Dockerfile
+      args:
+        APP_NAME: payments
+    ports:
+      - "4202:80"
+
+  notifications-mfe:
+    build:
+      context: ..
+      dockerfile: infrastructure/frontend.Dockerfile
+      args:
+        APP_NAME: notifications
+    ports:
+      - "4203:80"
+
+  authentication-api:
+    build:
+      context: ..
+      dockerfile: backends/authentication/Dockerfile
+    environment:
+      PORT: 3000
+      DATASET_PATH: /app/datasets/json
+    ports:
+      - "3000:3000"
+
+  accounts-api:
+    build:
+      context: ..
+      dockerfile: backends/accounts/Dockerfile
+    environment:
+      PORT: 3001
+      DATASET_PATH: /app/datasets/json
+    ports:
+      - "3001:3001"
+
+  payments-api:
+    build:
+      context: ..
+      dockerfile: backends/payments/Dockerfile
+    environment:
+      PORT: 3002
+      DATASET_PATH: /app/datasets/json
+    ports:
+      - "3002:3002"
+
+  notifications-api:
+    build:
+      context: ..
+      dockerfile: backends/notifications/Dockerfile
+    environment:
+      PORT: 3003
+      DATASET_PATH: /app/datasets/json
+    ports:
+      - "3003:3003"

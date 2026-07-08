@@ -1,0 +1,36 @@
+<section class="remote-page">
+  <div class="header">
+    <h2>Accounts Microfrontend</h2>
+    <p>Consulta cuentas, tarjetas y registra beneficiarios para el flujo de Payment Processing.</p>
+  </div>
+
+  <div class="grid">
+    <article class="card">
+      <h3>Cuentas</h3>
+      <ul *ngIf="accounts$ | async as accounts">
+        <li *ngFor="let account of accounts">
+          <span class="badge">{{ account.status }}</span>
+          {{ account.alias }} · {{ account.availableBalance | currency: account.currency }}
+        </li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h3>Tarjetas</h3>
+      <ul *ngIf="cards$ | async as cards">
+        <li *ngFor="let card of cards">{{ card.brand }} · {{ card.maskedNumber }} · {{ card.status }}</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h3>Beneficiarios</h3>
+      <ul *ngIf="beneficiaries$ | async as beneficiaries">
+        <li *ngFor="let beneficiary of beneficiaries">{{ beneficiary.alias }} · {{ beneficiary.bankName }}</li>
+      </ul>
+      <hr />
+      <input [(ngModel)]="beneficiaryAlias" placeholder="Alias" />
+      <input [(ngModel)]="beneficiaryAccount" placeholder="Cuenta destino" />
+      <button type="button" (click)="registerBeneficiary()">Registrar beneficiario</button>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,94 @@
+@authUrl = http://localhost:3000
+@accountsUrl = http://localhost:3001
+@paymentsUrl = http://localhost:3002
+@notificationsUrl = http://localhost:3003
+
+### 01 Health - Authentication
+GET {{authUrl}}/health
+
+### 02 Login demo
+POST {{authUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "edgar",
+  "password": "demo"
+}
+
+### 03 Session profile
+GET {{authUrl}}/auth/me
+
+### 04 Health - Accounts
+GET {{accountsUrl}}/health
+
+### 05 Account summary widget
+GET {{accountsUrl}}/accounts/summary
+
+### 06 Accounts list
+GET {{accountsUrl}}/accounts
+
+### 07 Cards by account
+GET {{accountsUrl}}/accounts/acc-001/cards
+
+### 08 Beneficiaries list
+GET {{accountsUrl}}/beneficiaries
+
+### 09 Register beneficiary
+POST {{accountsUrl}}/beneficiaries
+Content-Type: application/json
+
+{
+  "alias": "Proveedor PoC",
+  "bankName": "Mock Bank",
+  "accountNumber": "003-99118822",
+  "currency": "USD"
+}
+
+### 10 Health - Payments
+GET {{paymentsUrl}}/health
+
+### 11 Payment history widget
+GET {{paymentsUrl}}/payments/history?limit=3
+
+### 12 Initiate payment
+POST {{paymentsUrl}}/payments/initiate
+Content-Type: application/json
+
+{
+  "sourceAccountId": "acc-001",
+  "beneficiaryId": "ben-001",
+  "amount": 125.50,
+  "currency": "USD",
+  "description": "Pago demo PoC"
+}
+
+### 13 Confirm payment
+# Replace payment id and authorization code with values returned by initiate payment.
+POST {{paymentsUrl}}/payments/pay-REPLACE/confirm
+Content-Type: application/json
+
+{
+  "authorizationCode": "REPLACE"
+}
+
+### 14 Health - Notifications
+GET {{notificationsUrl}}/health
+
+### 15 Notifications list
+GET {{notificationsUrl}}/notifications?limit=5
+
+### 16 Mark notification as read
+POST {{notificationsUrl}}/notifications/not-001/read
+Content-Type: application/json
+
+{}
+
+### 17 Register payment event notification
+POST {{notificationsUrl}}/notifications/payment-events
+Content-Type: application/json
+
+{
+  "paymentId": "pay-001",
+  "status": "CONFIRMED",
+  "message": "Pago confirmado desde request HTTP"
+}

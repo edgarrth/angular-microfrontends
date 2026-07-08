@@ -1,0 +1,11 @@
+[
+  {
+    "id": "mov-001",
+    "accountId": "acc-001",
+    "type": "DEBIT",
+    "amount": 325.8,
+    "currency": "USD",
+    "description": "Pago confirmado pay-001",
+    "createdAt": "2026-07-01T14:22:00.000Z"
+  }
+]

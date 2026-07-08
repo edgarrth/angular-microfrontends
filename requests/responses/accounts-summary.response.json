@@ -1,0 +1,10 @@
+{
+  "data": {
+    "totalBalance": 57701.25,
+    "availableBalance": 56651.25,
+    "accounts": 2,
+    "cards": 2
+  },
+  "correlationId": "<uuid>",
+  "generatedAt": "2026-07-07T00:00:00.000Z"
+}

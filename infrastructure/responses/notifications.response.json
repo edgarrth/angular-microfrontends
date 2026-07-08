@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "id": "not-001",
+      "title": "Pago confirmado",
+      "message": "El pago pay-001 fue confirmado correctamente.",
+      "read": false,
+      "createdAt": "2026-07-01T14:22:10.000Z"
+    }
+  ],
+  "correlationId": "<uuid>",
+  "generatedAt": "2026-07-07T00:00:00.000Z"
+}

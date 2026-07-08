@@ -1,0 +1,13 @@
+{
+  "data": {
+    "accessToken": "<sha256-token>",
+    "user": {
+      "id": "usr-001",
+      "username": "edgar",
+      "displayName": "Edgar Rodriguez",
+      "roles": ["PAYMENT_OPERATOR", "PAYMENT_APPROVER"]
+    }
+  },
+  "correlationId": "<uuid>",
+  "generatedAt": "2026-07-07T00:00:00.000Z"
+}
