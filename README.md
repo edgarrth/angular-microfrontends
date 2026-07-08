@@ -482,6 +482,29 @@ npm run start:notifications-mfe
 npm run start:shell
 ```
 
+Ejeuctar todo en conjunto:
+
+Instalar concurrently:
+```bash
+npm install -D concurrently --registry=https://registry.npmjs.org/
+```
+
+Ejecutar:
+```bash
+export DATASET_PATH="$(pwd)/datasets/json"
+
+npx concurrently -k \
+-n auth-api,accounts-api,payments-api,notifications-api,accounts-mfe,payments-mfe,notifications-mfe,shell \
+"npm run start:api:authentication" \
+"npm run start:api:accounts" \
+"npm run start:api:payments" \
+"npm run start:api:notifications" \
+"npm run start:accounts-mfe" \
+"npm run start:payments-mfe" \
+"npm run start:notifications-mfe" \
+"npm run start:shell"
+```
+
 Abrir:
 
 ```text
