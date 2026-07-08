@@ -1,12 +1,19 @@
-# Payment Processing PoC - Angular Native Federation
+# Payment Processing PoC - Angular 21 Native Federation
 
-## Descripción funcional
+## 1. Descripción funcional
 
-Esta PoC implementa un flujo simplificado de **Payment Processing** usando Angular moderno con **Standalone Components** y **Native Federation**. La solución está compuesta por un **Shell** que orquesta la navegación y tres Microfrontends independientes:
+Esta PoC implementa un flujo simplificado de **Payment Processing** usando Angular con 
+**Standalone Components** y **Native Federation**.
 
-- **Accounts MFE**: consulta cuentas, tarjetas y registra beneficiarios.
-- **Payments MFE**: inicia pagos, confirma pagos y publica eventos.
-- **Notifications MFE**: consulta notificaciones y recibe eventos publicados por otros MFEs.
+La solución está compuesta por un **Shell** que orquesta la navegación, 
+la autenticación compartida, la carga remota de Microfrontends y la comunicación entre 
+componentes mediante un Event Bus frontend.
+
+Los dominios funcionales principales son:
+
+- **Accounts MFE**: consulta cuentas, consulta tarjetas y registra beneficiarios.
+- **Payments MFE**: inicia pagos, confirma pagos, consulta historial y publica eventos.
+- **Notifications MFE**: consulta notificaciones, marca notificaciones como leídas y refleja eventos de pagos.
 
 Cada dominio backend es un servicio REST independiente:
 
@@ -15,36 +22,64 @@ Cada dominio backend es un servicio REST independiente:
 - `payments-api`
 - `notifications-api`
 
-Toda la solución corre localmente, usa datasets JSON como fuente mock y no depende de servicios cloud, proveedores reales de identidad ni bases de datos productivas.
+Toda la solución corre localmente, usa datasets JSON como fuente mock.
 
+## 2. Qué demuestra esta versión
 
-## Angular 21 baseline
+Esta versión demuestra dos niveles de Microfrontends:
+
+| Patrón | Dónde se ve | Descripción |
+|---|---|---|
+| **Route-level Microfrontends** | `/accounts`, `/payments`, `/notifications` | El Shell carga una aplicación remota completa por ruta. |
+| **Section-level Microfrontends** | Home `/` | El Shell carga secciones/cards federadas expuestas por cada MFE. |
+
+En el Home del Shell, las secciones marcadas como:
+
+- **Accounts MFE / Cuentas y tarjetas**
+- **Payments MFE / Últimos pagos**
+- **Notifications MFE / Bandeja y alertas**
+
+**No son cards locales del Shell**. Son componentes remotos expuestos por cada Microfrontend mediante Native Federation.
+
+La única sección local del Shell en el Home es:
+
+```text
+SHELL-OWNED EVENT BUS MONITOR
+```
+
+Esa sección pertenece al Shell porque representa el monitoreo global de eventos emitidos por los MFEs.
+
+## 3. Angular 21 baseline
 
 La PoC está alineada a Angular 21.x:
 
-- Angular framework: `21.2.17`
-- Angular CLI: `21.2.18`
-- Native Federation: `@angular-architects/native-federation@21.2.5`
-- TypeScript: `5.9.3`
-- Node.js usado para validar: `22.16.0`
-- Configuración Angular moderna sin `provideZoneChangeDetection`, manteniendo compatibilidad con el comportamiento zoneless por defecto de Angular 21+.
+| Elemento | Versión usada |
+|---|---|
+| Angular framework | `21.2.17` |
+| Angular CLI | `21.2.18` |
+| Native Federation | `@angular-architects/native-federation@21.2.5` |
+| TypeScript | `5.9.3` |
+| Node.js recomendado | `22.16.0` |
+| Backend runtime | Node.js 22 + Express 5 |
 
-## Objetivos de la PoC
+Recomendación local:
 
-1. Demostrar una arquitectura de Microfrontends con Angular, Native Federation y despliegue independiente.
-2. Demostrar comunicación entre MFEs mediante un Event Bus compartido.
-3. Simular autenticación compartida usando sesión local mock.
-4. Simular un flujo de Payment Processing de extremo a extremo.
-5. Implementar backends REST separados por dominio usando DDD, Clean Architecture, SOLID y Hexagonal Architecture.
-6. Mantener la infraestructura simple, local y limitada a lo necesario para probar el concepto.
+```bash
+nvm install 22.16.0
+nvm use 22.16.0
+node -v
+npm -v
+```
 
-## Stack tecnológico
+## 4. Stack tecnológico
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | Angular 21.2.x, Standalone Components, Angular Router, zoneless-ready configuration |
+| Frontend | Angular 21.2.x, Standalone Components, Angular Router |
 | Microfrontends | `@angular-architects/native-federation` |
-| Comunicación frontend | Event Bus basado en `CustomEvent` + RxJS |
+| Comunicación frontend | Event Bus basado en `window.CustomEvent` + RxJS |
+| Sesión compartida mock | `localStorage`, cookie local y sincronización periódica |
+| HTTP frontend | `HttpClient`, `withFetch`, interceptor funcional |
 | Backend | Node.js 22, Express 5, TypeScript 5.9 |
 | Validación de comandos | Zod |
 | Datasets | JSON local |
@@ -52,7 +87,7 @@ La PoC está alineada a Angular 21.x:
 | Requests | REST Client `.http` |
 | Testing backend | Node Test Runner |
 
-## Arquitectura general
+## 5. Arquitectura general
 
 ```mermaid
 flowchart TB
@@ -71,17 +106,19 @@ flowchart TB
     EventBus[[Shared Event Bus]]
 
     Browser --> Shell
-    Shell -->|federation.manifest.json| AccountsMFE
-    Shell -->|federation.manifest.json| PaymentsMFE
-    Shell -->|federation.manifest.json| NotificationsMFE
+
+    Shell -->|Route federation<br/>./Component| AccountsMFE
+    Shell -->|Route federation<br/>./Component| PaymentsMFE
+    Shell -->|Route federation<br/>./Component| NotificationsMFE
+
+    Shell -->|Home section federation<br/>./HomeSection| AccountsMFE
+    Shell -->|Home section federation<br/>./HomeSection| PaymentsMFE
+    Shell -->|Home section federation<br/>./HomeSection| NotificationsMFE
 
     Shell --> AuthAPI
-    Shell --> AccountsAPI
-    Shell --> PaymentsAPI
-    Shell --> NotificationsAPI
-
     AccountsMFE --> AccountsAPI
     PaymentsMFE --> PaymentsAPI
+    PaymentsMFE --> NotificationsAPI
     NotificationsMFE --> NotificationsAPI
 
     PaymentsMFE --> EventBus
@@ -94,7 +131,7 @@ flowchart TB
     NotificationsAPI --> Datasets
 ```
 
-## Estructura del proyecto
+## 7. Estructura del proyecto
 
 ```text
 payment-processing-poc/
@@ -102,12 +139,42 @@ payment-processing-poc/
 ├── package.json
 ├── README.md
 ├── VALIDATION.md
+├── tsconfig.json
 ├── projects/
 │   ├── shell/
+│   │   ├── public/
+│   │   │   └── federation.manifest.json
+│   │   └── src/app/
+│   │       ├── app.routes.ts
+│   │       ├── home.component.ts
+│   │       ├── home.component.html
+│   │       ├── login.component.ts
+│   │       └── app.ts
 │   ├── accounts/
+│   │   ├── federation.config.js
+│   │   └── src/app/
+│   │       ├── app.ts
+│   │       └── accounts-home-section.component.ts
 │   ├── payments/
+│   │   ├── federation.config.js
+│   │   └── src/app/
+│   │       ├── app.ts
+│   │       └── payments-home-section.component.ts
 │   ├── notifications/
+│   │   ├── federation.config.js
+│   │   └── src/app/
+│   │       ├── app.ts
+│   │       └── notifications-home-section.component.ts
 │   └── shared/
+│       └── src/lib/
+│           ├── api-config.ts
+│           ├── auth-api.service.ts
+│           ├── auth-session.service.ts
+│           ├── auth-token.interceptor.ts
+│           ├── auth.guard.ts
+│           ├── event-bus.service.ts
+│           ├── login-panel.component.ts
+│           └── models.ts
 ├── backends/
 │   ├── authentication/
 │   ├── accounts/
@@ -130,29 +197,34 @@ payment-processing-poc/
     └── scripts/
 ```
 
-## Shell
+## 7. Shell
 
-El Shell es la aplicación principal. Sus responsabilidades son:
+El Shell es la aplicación principal.
 
-- Cargar el `federation.manifest.json`.
+Responsabilidades:
+
+- Cargar `federation.manifest.json`.
 - Resolver rutas remotas hacia Accounts, Payments y Notifications.
-- Mostrar widgets de resumen del dominio de pagos.
+- Cargar secciones federadas de Home expuestas por cada MFE.
 - Gestionar login/logout demo.
+- Proteger rutas remotas usando `authGuard`.
 - Mantener navegación principal.
-- Escuchar eventos del Event Bus.
+- Escuchar eventos globales del Event Bus.
+- Mostrar el monitor local `Shell-owned Event Bus Monitor`.
 
 Rutas principales:
 
-| Ruta | Origen | Descripción |
-|---|---|---|
-| `/` | Shell | Home con widgets de resumen |
-| `/accounts` | Accounts MFE | Gestión de cuentas, tarjetas y beneficiarios |
-| `/payments` | Payments MFE | Inicio y confirmación de pagos |
-| `/notifications` | Notifications MFE | Bandeja de notificaciones y eventos |
+| Ruta | Origen | Protección | Descripción |
+|---|---|---|---|
+| `/` | Shell + secciones federadas | Requiere sesión para mostrar secciones remotas | Home con secciones remotas de cada MFE |
+| `/login` | Shell | Pública | Login mock compartido |
+| `/accounts` | Accounts MFE | `authGuard` | Gestión de cuentas, tarjetas y beneficiarios |
+| `/payments` | Payments MFE | `authGuard` | Inicio y confirmación de pagos |
+| `/notifications` | Notifications MFE | `authGuard` | Bandeja de notificaciones |
 
-## Microfrontends
+## 8. Microfrontends
 
-## Accounts MFE
+## 8.1 Accounts MFE
 
 Responsabilidades:
 
@@ -160,10 +232,21 @@ Responsabilidades:
 - Consultar tarjetas asociadas a una cuenta.
 - Consultar beneficiarios.
 - Registrar beneficiarios mock.
+- Exponer una sección federada para el Home del Shell.
+- Bloquear contenido cuando se abre standalone sin sesión.
 
 Backend asociado: `accounts-api`.
 
-## Payments MFE
+Exposes principales:
+
+```js
+exposes: {
+  './Component': './projects/accounts/src/app/app.ts',
+  './HomeSection': './projects/accounts/src/app/accounts-home-section.component.ts',
+}
+```
+
+## 8.2 Payments MFE
 
 Responsabilidades:
 
@@ -171,89 +254,122 @@ Responsabilidades:
 - Recibir código mock de autorización.
 - Confirmar pago.
 - Consultar historial.
+- Refrescar historial automáticamente después de iniciar o confirmar pagos.
 - Publicar eventos `PAYMENT_INITIATED` y `PAYMENT_CONFIRMED`.
+- Registrar notificaciones mock en `notifications-api` mediante `/notifications/payment-events`.
+- Exponer una sección federada para el Home del Shell.
+- Bloquear contenido cuando se abre standalone sin sesión.
 
 Backend asociado: `payments-api`.
 
-## Notifications MFE
+Exposes principales:
+
+```js
+exposes: {
+  './Component': './projects/payments/src/app/app.ts',
+  './HomeSection': './projects/payments/src/app/payments-home-section.component.ts',
+}
+```
+
+## 8.3 Notifications MFE
 
 Responsabilidades:
 
 - Consultar notificaciones.
+- Refrescar bandeja automáticamente.
 - Marcar notificaciones como leídas.
 - Escuchar eventos vivos del Event Bus.
+- Exponer una sección federada para el Home del Shell.
+- Bloquear contenido cuando se abre standalone sin sesión.
 
 Backend asociado: `notifications-api`.
 
-## Shared Library
+Exposes principales:
 
-La librería `projects/shared` contiene elementos reutilizables:
-
-- `AuthSessionService`: sesión compartida mock mediante `localStorage`.
-- `EventBusService`: bus de eventos basado en `window.CustomEvent` y RxJS.
-- `PAYMENT_PROCESSING_API_CONFIG`: configuración de URLs locales.
-- Modelos compartidos.
-
-## Backends
-
-Cada backend es independiente y mantiene esta estructura mínima:
-
-```text
-src/
-├── domain/
-│   ├── entities/
-│   └── repositories/
-├── application/
-│   ├── ports/
-│   └── use-cases/
-├── infrastructure/
-│   └── persistence/
-└── presentation/
-    ├── http/
-    ├── routes/
-    └── server.ts
+```js
+exposes: {
+  './Component': './projects/notifications/src/app/app.ts',
+  './HomeSection': './projects/notifications/src/app/notifications-home-section.component.ts',
+}
 ```
 
-## Clean Architecture y Hexagonal Architecture
+## 9. Home compuesto por secciones federadas
+
+El Home del Shell carga dinámicamente componentes remotos usando Native Federation:
+
+```ts
+loadRemoteModule('accounts', './HomeSection')
+loadRemoteModule('payments', './HomeSection')
+loadRemoteModule('notifications', './HomeSection')
+```
+
+Cada remoto devuelve un componente standalone:
+
+| Remote name | Expose | Componente remoto |
+|---|---|---|
+| `accounts` | `./HomeSection` | `AccountsHomeSectionComponent` |
+| `payments` | `./HomeSection` | `PaymentsHomeSectionComponent` |
+| `notifications` | `./HomeSection` | `NotificationsHomeSectionComponent` |
+
+El Shell renderiza esos componentes mediante `NgComponentOutlet`.
 
 ```mermaid
 flowchart LR
-    Presentation[Presentation<br/>REST Controllers / Routes]
-    Application[Application<br/>Use Cases]
-    Domain[Domain<br/>Entities + Repository Contracts]
-    Infrastructure[Infrastructure<br/>JSON Dataset Adapters]
+    ShellHome[Shell Home]
+    AccountsSection[AccountsHomeSectionComponent]
+    PaymentsSection[PaymentsHomeSectionComponent]
+    NotificationsSection[NotificationsHomeSectionComponent]
+    EventBusMonitor[Shell-owned Event Bus Monitor]
 
-    Presentation --> Application
-    Application --> Domain
-    Infrastructure --> Domain
-    Presentation --> Infrastructure
+    ShellHome -->|loadRemoteModule accounts ./HomeSection| AccountsSection
+    ShellHome -->|loadRemoteModule payments ./HomeSection| PaymentsSection
+    ShellHome -->|loadRemoteModule notifications ./HomeSection| NotificationsSection
+    ShellHome --> EventBusMonitor
+
+    AccountsSection --> AccountsAPI[Accounts API]
+    PaymentsSection --> PaymentsAPI[Payments API]
+    NotificationsSection --> NotificationsAPI[Notifications API]
 ```
 
-Reglas aplicadas:
+## 10. Shared Library
 
-- El dominio no depende de Express ni infraestructura.
-- Los casos de uso dependen de contratos de repositorio.
-- Los adaptadores JSON implementan los contratos del dominio.
-- La presentación sólo expone endpoints y transforma respuestas HTTP.
+La librería `projects/shared` contiene elementos reutilizables:
 
-## Flujo de autenticación
+| Elemento | Responsabilidad |
+|---|---|
+| `AuthSessionService` | Administra sesión compartida mock con `localStorage`, cookie local y sincronización. |
+| `AuthApiService` | Consume `authentication-api` para login/logout. |
+| `authTokenInterceptor` | Agrega `Authorization: Bearer <accessToken>` a las llamadas HTTP. |
+| `authGuard` | Protege rutas remotas del Shell. |
+| `LoginPanelComponent` | Componente standalone de login reutilizado por Shell y MFEs. |
+| `EventBusService` | Publica y escucha eventos mediante `window.CustomEvent`. |
+| `PAYMENT_PROCESSING_API_CONFIG` | Configuración de URLs locales de APIs. |
+| `models.ts` | Contratos compartidos. |
 
-```mermaid
-sequenceDiagram
-    participant User as Usuario
-    participant Shell as Shell
-    participant Auth as Authentication API
-    participant Session as AuthSessionService
+Exports esperados en `projects/shared/src/public-api.ts`:
 
-    User->>Shell: Click Login demo
-    Shell->>Auth: POST /auth/login
-    Auth-->>Shell: accessToken + user
-    Shell->>Session: Guarda sesión en localStorage
-    Session-->>Shell: Estado autenticado
-    Shell-->>User: Muestra nombre del usuario
+```ts
+export * from './lib/api-config';
+export * from './lib/auth-api.service';
+export * from './lib/auth-session.service';
+export * from './lib/auth-token.interceptor';
+export * from './lib/auth.guard';
+export * from './lib/event-bus.service';
+export * from './lib/login-panel.component';
+export * from './lib/models';
 ```
 
-La autenticación es mock. No se usa proveedor real de identidad ni OAuth/OIDC real. El objetivo es probar sesión compartida local entre Shell y Microfrontends.
+Importante: cuando se modifica `projects/shared`, se debe recompilar la librería antes de levantar Shell/MFEs:
+
+```bash
+npm run build:shared
+```
+
+El script `start:all` ya ejecuta `npm run build:shared` automáticamente.
+
+## 11. Sesión compartida entre Shell y MFEs
+
+La autenticación es mock y local. No se usa proveedor real de identidad ni OAuth/OIDC real.
 
 Credenciales demo:
 
@@ -262,7 +378,53 @@ username: edgar
 password: demo
 ```
 
-## Flujo de navegación
+La sesión se comparte entre:
+
+- Shell: `http://localhost:4200`
+- Accounts MFE: `http://localhost:4201`
+- Payments MFE: `http://localhost:4202`
+- Notifications MFE: `http://localhost:4203`
+
+Mecanismos usados:
+
+1. `localStorage` con la clave `payment-processing.session`.
+2. Cookie local `payment_processing_session` con `Path=/` y `SameSite=Lax`.
+3. Evento browser `payment-processing.session.changed`.
+4. Sincronización periódica cada 1 segundo para apps abiertas en puertos distintos.
+5. Interceptor HTTP que envía el token mock en cada llamada.
+
+Flujo de autenticación:
+
+```mermaid
+sequenceDiagram
+    participant User as Usuario
+    participant Login as LoginPanelComponent
+    participant Auth as Authentication API
+    participant Session as AuthSessionService
+    participant Shell as Shell / MFE
+
+    User->>Login: Ingresa edgar/demo
+    Login->>Auth: POST /auth/login
+    Auth-->>Login: accessToken + user
+    Login->>Session: login(session)
+    Session->>Session: Guarda localStorage + cookie
+    Session->>Shell: Actualiza signal session
+    Shell-->>User: Renderiza contenido protegido
+```
+
+Protección aplicada:
+
+| Caso | Protección |
+|---|---|
+| Navegar desde Shell a `/accounts`, `/payments`, `/notifications` | `authGuard` en rutas del Shell |
+| Abrir MFE directo en `http://localhost:4201` | Validación de sesión dentro de Accounts MFE |
+| Abrir MFE directo en `http://localhost:4202` | Validación de sesión dentro de Payments MFE |
+| Abrir MFE directo en `http://localhost:4203` | Validación de sesión dentro de Notifications MFE |
+| Llamadas HTTP a APIs | `authTokenInterceptor` agrega `Authorization` |
+
+Nota de diseño: para una PoC local es aceptable usar `localStorage` y cookie JS. En producción se debería usar cookie `HttpOnly + Secure + SameSite`, OIDC real y un BFF o API Gateway.
+
+## 12. Flujo de navegación remota
 
 ```mermaid
 sequenceDiagram
@@ -274,12 +436,13 @@ sequenceDiagram
     Browser->>Shell: GET /
     Shell->>Manifest: Carga manifiesto
     Browser->>Shell: Navega a /payments
+    Shell->>Shell: authGuard valida sesión
     Shell->>Remote: GET http://localhost:4202/remoteEntry.json
     Remote-->>Shell: Exposes ./Component
     Shell-->>Browser: Renderiza Payments MFE
 ```
 
-## Flujo de comunicación mediante Event Bus
+## 13. Flujo de comunicación mediante Event Bus
 
 ```mermaid
 sequenceDiagram
@@ -289,14 +452,52 @@ sequenceDiagram
     participant Notifications as Notifications MFE
 
     Payments->>Bus: publish PAYMENT_INITIATED
-    Bus-->>Shell: evento recibido
-    Bus-->>Notifications: evento recibido
+    Bus-->>Shell: Evento recibido
+    Bus-->>Notifications: Evento recibido
     Payments->>Bus: publish PAYMENT_CONFIRMED
-    Bus-->>Shell: actualiza widget Event Bus
-    Bus-->>Notifications: muestra evento vivo
+    Bus-->>Shell: Actualiza Shell-owned Event Bus Monitor
+    Bus-->>Notifications: Actualiza eventos vivos
 ```
 
-## Manifest Native Federation
+El Event Bus es frontend-only y usa `window.CustomEvent`. 
+Sirve para demostrar comunicación entre MFEs cargados dentro de la misma ventana/shell.
+
+Si se abren MFEs en pestañas separadas, el Event Bus no cruza pestañas. Para cubrir ese caso, `Payments MFE` registra eventos de pago en `notifications-api`, y `Notifications MFE` refresca su bandeja contra el backend mock.
+
+## 14. Flujo de notificaciones de pagos
+
+Cuando se inicia o confirma un pago, el flujo actual es:
+
+```mermaid
+sequenceDiagram
+    participant User as Usuario
+    participant PaymentsMFE as Payments MFE
+    participant PaymentsAPI as Payments API
+    participant NotificationsAPI as Notifications API
+    participant EventBus as Event Bus
+    participant NotificationsMFE as Notifications MFE
+
+    User->>PaymentsMFE: Iniciar pago
+    PaymentsMFE->>PaymentsAPI: POST /payments/initiate
+    PaymentsAPI-->>PaymentsMFE: paymentId + authorizationCode
+    PaymentsMFE->>NotificationsAPI: POST /notifications/payment-events
+    NotificationsAPI-->>PaymentsMFE: Notificación creada
+    PaymentsMFE->>EventBus: PAYMENT_INITIATED
+    PaymentsMFE->>PaymentsMFE: Refresca historial
+
+    User->>PaymentsMFE: Confirmar pago
+    PaymentsMFE->>PaymentsAPI: POST /payments/{id}/confirm
+    PaymentsAPI-->>PaymentsMFE: Pago CONFIRMED
+    PaymentsMFE->>NotificationsAPI: POST /notifications/payment-events
+    NotificationsAPI-->>PaymentsMFE: Notificación creada
+    PaymentsMFE->>EventBus: PAYMENT_CONFIRMED
+    NotificationsMFE->>NotificationsAPI: GET /notifications
+    NotificationsAPI-->>NotificationsMFE: Bandeja actualizada
+```
+
+Esto simula una integración asincrónica sin usar brokers ni infraestructura adicional.
+
+## 15. Manifest Native Federation
 
 Archivo:
 
@@ -318,17 +519,19 @@ El Shell resuelve dinámicamente cada remoto con:
 
 ```ts
 loadRemoteModule('payments', './Component')
+loadRemoteModule('payments', './HomeSection')
 ```
 
-Cada MFE expone su componente principal en su `federation.config.js`:
+Cada MFE expone su componente principal y su sección de Home en su `federation.config.js`:
 
 ```js
 exposes: {
   './Component': './projects/payments/src/app/app.ts',
+  './HomeSection': './projects/payments/src/app/payments-home-section.component.ts',
 }
 ```
 
-## Despliegue independiente
+## 16. Despliegue independiente
 
 Cada frontend se puede construir y servir de forma independiente:
 
@@ -341,7 +544,54 @@ Cada frontend se puede construir y servir de forma independiente:
 
 En Docker Compose cada aplicación se sirve con Nginx en su propio contenedor.
 
-## Endpoints
+También se pueden abrir los MFEs directamente:
+
+```text
+Accounts MFE       http://localhost:4201
+Payments MFE       http://localhost:4202
+Notifications MFE  http://localhost:4203
+Shell              http://localhost:4200
+```
+
+Si no existe sesión compartida, los MFEs standalone muestran el login y no renderizan el contenido funcional.
+
+## 17. Backends
+
+Cada backend es independiente y mantiene esta estructura mínima:
+
+```text
+src/
+├── domain/
+│   ├── entities/
+│   └── repositories/
+├── application/
+│   ├── ports/
+│   └── use-cases/
+├── infrastructure/
+│   └── persistence/
+└── presentation/
+    ├── http/
+    ├── routes/
+    └── server.ts
+```
+
+## 18. Clean Architecture y Hexagonal Architecture
+
+```mermaid
+flowchart LR
+    Presentation[Presentation<br/>REST Controllers / Routes]
+    Application[Application<br/>Use Cases]
+    Domain[Domain<br/>Entities + Repository Contracts]
+    Infrastructure[Infrastructure<br/>JSON Dataset Adapters]
+
+    Presentation --> Application
+    Application --> Domain
+    Infrastructure --> Domain
+    Presentation --> Infrastructure
+```
+
+
+## 19. Endpoints
 
 | Orden | Dominio | Método | URL | Descripción funcional | Descripción técnica |
 |---:|---|---|---|---|---|
@@ -350,13 +600,13 @@ En Docker Compose cada aplicación se sirve con Nginx en su propio contenedor.
 | 3 | Authentication | GET | `http://localhost:3000/auth/me` | Consulta perfil | Devuelve usuario mock autenticado |
 | 4 | Authentication | POST | `http://localhost:3000/auth/logout` | Logout demo | Devuelve confirmación de logout |
 | 5 | Accounts | GET | `http://localhost:3001/health` | Verifica disponibilidad | Health check del servicio |
-| 6 | Accounts | GET | `http://localhost:3001/accounts/summary` | Widget de resumen | Agrega saldos y número de tarjetas |
+| 6 | Accounts | GET | `http://localhost:3001/accounts/summary` | Sección federada de Home | Agrega saldos y número de tarjetas |
 | 7 | Accounts | GET | `http://localhost:3001/accounts` | Consulta cuentas | Lee `accounts.json` |
 | 8 | Accounts | GET | `http://localhost:3001/accounts/{id}/cards` | Consulta tarjetas | Filtra `cards.json` por cuenta |
 | 9 | Accounts | GET | `http://localhost:3001/beneficiaries` | Consulta beneficiarios | Lee `beneficiaries.json` |
 | 10 | Accounts | POST | `http://localhost:3001/beneficiaries` | Registro de beneficiario | Valida comando con Zod y guarda en memoria |
 | 11 | Payments | GET | `http://localhost:3002/health` | Verifica disponibilidad | Health check del servicio |
-| 12 | Payments | GET | `http://localhost:3002/payments/history?limit=3` | Consulta historial | Ordena pagos por fecha y aplica límite |
+| 12 | Payments | GET | `http://localhost:3002/payments/history?limit=3` | Sección federada de Home / historial | Ordena pagos por fecha y aplica límite |
 | 13 | Payments | GET | `http://localhost:3002/payments` | Lista pagos | Lee pagos iniciales y pagos creados en memoria |
 | 14 | Payments | POST | `http://localhost:3002/payments/initiate` | Inicia pago | Crea pago `INITIATED` y código mock |
 | 15 | Payments | POST | `http://localhost:3002/payments/{id}/confirm` | Confirma pago | Valida código mock y cambia estado a `CONFIRMED` |
@@ -364,9 +614,9 @@ En Docker Compose cada aplicación se sirve con Nginx en su propio contenedor.
 | 17 | Notifications | GET | `http://localhost:3003/health` | Verifica disponibilidad | Health check del servicio |
 | 18 | Notifications | GET | `http://localhost:3003/notifications?limit=5` | Consulta notificaciones | Lee `notifications.json` y aplica límite |
 | 19 | Notifications | POST | `http://localhost:3003/notifications/{id}/read` | Marca notificación | Cambia estado `read` en memoria |
-| 20 | Notifications | POST | `http://localhost:3003/notifications/payment-events` | Registra evento de pago | Crea notificación mock desde evento |
+| 20 | Notifications | POST | `http://localhost:3003/notifications/payment-events` | Registra evento de pago | Crea notificación mock desde evento de pago |
 
-## Datos iniciales
+## 20. Datos iniciales
 
 Los datasets están en:
 
@@ -384,18 +634,19 @@ datasets/json/
 Los backends cargan estos archivos al iniciar mediante la variable:
 
 ```text
-DATASET_PATH=./datasets/json
+DATASET_PATH=$PWD/datasets/json
 ```
 
-Para revisar los datasets:
+Para revisar o resetear los datasets locales:
 
 ```bash
 ./datasets/scripts/reset-local-datasets.sh
 ```
 
-No hay base de datos. Los cambios realizados por POST se guardan en memoria mientras el backend esté ejecutándose.
+No hay base de datos. Los cambios realizados por POST se guardan en memoria mientras el 
+backend correspondiente esté ejecutándose.
 
-## Requests y responses
+## 21. Requests y responses
 
 Archivo principal REST Client:
 
@@ -410,7 +661,7 @@ requests/responses/
 infrastructure/responses/
 ```
 
-## Ejecutar toda la solución con Docker Compose
+## 22. Ejecutar toda la solución con Docker Compose
 
 Desde la raíz del proyecto:
 
@@ -441,17 +692,44 @@ Apagar:
 npm run docker:down
 ```
 
-## Ejecutar cada proyecto individualmente
+## 23. Ejecutar localmente sin Docker
+
+## 23.1 Instalación recomendada
+
+Desde la raíz:
+
+```bash
+cd ~/Workspace/payment-processing-poc
+npm run install:all
+```
+
+El script `install:all` instala:
+
+- Dependencias del workspace Angular raíz.
+- Dependencias de `backends/authentication`.
+- Dependencias de `backends/accounts`.
+- Dependencias de `backends/payments`.
+- Dependencias de `backends/notifications`.
+
+## 23.2 Instalación manual detallada
 
 Instalar dependencias frontend:
 
 ```bash
-npm install
+npm install --no-audit --no-fund --registry=https://registry.npmjs.org/
 ```
 
 Instalar dependencias backend:
 
-Limpiar locks
+```bash
+npm --prefix backends/authentication install --no-audit --no-fund --registry=https://registry.npmjs.org/
+npm --prefix backends/accounts install --no-audit --no-fund --registry=https://registry.npmjs.org/
+npm --prefix backends/payments install --no-audit --no-fund --registry=https://registry.npmjs.org/
+npm --prefix backends/notifications install --no-audit --no-fund --registry=https://registry.npmjs.org/
+```
+
+Si vienes de un ZIP anterior o un lock generado en otro entorno, puedes limpiar antes:
+
 ```bash
 rm -rf node_modules package-lock.json
 rm -rf backends/authentication/node_modules backends/authentication/package-lock.json
@@ -460,20 +738,23 @@ rm -rf backends/payments/node_modules backends/payments/package-lock.json
 rm -rf backends/notifications/node_modules backends/notifications/package-lock.json
 ```
 
-```bash
-npm --prefix backends/authentication install
-npm --prefix backends/accounts install
-npm --prefix backends/payments install
-npm --prefix backends/notifications install
-```
+Luego reinstala con los comandos anteriores.
 
-Compilar todo:
+## 23.3 Compilar todo
 
 ```bash
 npm run build:all
 ```
 
-Ejecutar APIs en terminales separadas:
+Compilación por partes:
+
+```bash
+npm run build:shared
+npm run build:frontends
+npm run build:apis
+```
+
+## 23.4 Ejecutar APIs en terminales separadas
 
 ```bash
 npm run start:api:authentication
@@ -482,7 +763,7 @@ npm run start:api:payments
 npm run start:api:notifications
 ```
 
-Ejecutar frontends en terminales separadas:
+## 23.5 Ejecutar frontends en terminales separadas
 
 ```bash
 npm run start:accounts-mfe
@@ -491,9 +772,25 @@ npm run start:notifications-mfe
 npm run start:shell
 ```
 
-Ejecutar todo junto
-```bash
+## 23.6 Ejecutar todo junto
 
+Opción recomendada:
+
+```bash
+npm run start:all
+```
+
+Este script ejecuta primero:
+
+```bash
+npm run build:shared
+```
+
+y luego levanta APIs, MFEs y Shell con `concurrently`.
+
+Comando manual equivalente:
+
+```bash
 npm install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
 npm --prefix backends/authentication install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
 npm --prefix backends/accounts install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
@@ -514,22 +811,32 @@ npx concurrently -k \
   "npm run start:shell"
 ```
 
-o
-```bash
-npm run start:all
-```
-
 Abrir:
 
 ```text
-http://localhost:4200
+Shell              http://localhost:4200
 Accounts MFE       http://localhost:4201
 Payments MFE       http://localhost:4202
 Notifications MFE  http://localhost:4203
-Shell              http://localhost:4200
 ```
 
-## Agregar un nuevo Microfrontend
+## 24. Scripts principales
+
+| Script | Descripción |
+|---|---|
+| `npm run install:all` | Instala dependencias del workspace y de todos los backends. |
+| `npm run build:shared` | Compila la librería compartida. |
+| `npm run build:frontends` | Compila Shell y MFEs. |
+| `npm run build:apis` | Compila los cuatro backends. |
+| `npm run build:all` | Compila frontends y APIs. |
+| `npm run start:apis` | Levanta las cuatro APIs. |
+| `npm run start:frontends` | Compila shared y levanta Shell + MFEs. |
+| `npm run start:all` | Compila shared y levanta APIs + Shell + MFEs. |
+| `npm run test:apis` | Ejecuta pruebas unitarias de backends. |
+| `npm run docker:up` | Levanta la solución con Docker Compose. |
+| `npm run docker:down` | Apaga Docker Compose y elimina volúmenes. |
+
+## 25. Agregar un nuevo Microfrontend
 
 1. Crear la aplicación Angular:
 
@@ -543,7 +850,7 @@ npx ng generate application new-domain --standalone --routing --style=scss --ssr
 npx ng g @angular-architects/native-federation:init --project new-domain --port 4204 --type remote
 ```
 
-3. Exponer el componente en `projects/new-domain/federation.config.js`:
+3. Exponer el componente principal en `projects/new-domain/federation.config.js`:
 
 ```js
 exposes: {
@@ -564,13 +871,69 @@ exposes: {
 ```ts
 {
   path: 'new-domain',
+  canActivate: [authGuard],
   loadComponent: () => loadRemoteModule('new-domain', './Component').then((m) => m.App),
 }
 ```
 
 6. Agregar servicio Docker Compose si se requiere despliegue local independiente.
 
-## Agregar un nuevo backend
+## 26. Agregar una nueva sección federada al Home
+
+Este es el patrón recomendado para evitar cards locales en el Shell.
+
+1. Crear un componente standalone en el MFE:
+
+```text
+projects/new-domain/src/app/new-domain-home-section.component.ts
+```
+
+2. Exponerlo en `federation.config.js`:
+
+```js
+exposes: {
+  './Component': './projects/new-domain/src/app/app.ts',
+  './HomeSection': './projects/new-domain/src/app/new-domain-home-section.component.ts',
+}
+```
+
+3. Cargarlo desde el Home del Shell:
+
+```ts
+readonly newDomainHomeSection = loadRemoteModule('new-domain', './HomeSection')
+  .then((m) => m.NewDomainHomeSectionComponent);
+```
+
+4. Renderizarlo con `NgComponentOutlet`:
+
+```html
+@if (newDomainHomeSection | async; as section) {
+  <ng-container *ngComponentOutlet="section"></ng-container>
+}
+```
+
+5. Mantener la navegación de detalle con `routerLink` hacia la ruta remota:
+
+```html
+<a routerLink="/new-domain">Ver detalle</a>
+```
+
+## 27. Agregar un nuevo Widget local del Shell
+
+Este patrón se mantiene como opción cuando el widget pertenece realmente al Shell, 
+como el monitor de Event Bus.
+
+1. Crear o extender el endpoint backend que entregue el agregado necesario.
+2. Consumir el endpoint desde el componente del Shell.
+3. Agregar la tarjeta visual en el HTML del Shell.
+4. Si el widget depende de eventos, suscribirse a `EventBusService.events$`.
+
+Regla recomendada:
+
+- Si el widget representa una capacidad de un dominio, exponerlo desde el MFE dueño del dominio.
+- Si el widget representa una capacidad transversal del Shell, implementarlo localmente en el Shell.
+
+## 28. Agregar un nuevo backend
 
 1. Crear carpeta bajo `backends/new-domain`.
 2. Mantener estructura:
@@ -588,17 +951,11 @@ src/presentation
 6. Exponer endpoints en `presentation/routes`.
 7. Agregar `Dockerfile` y servicio en `infrastructure/docker-compose.yml`.
 8. Agregar ejemplos al archivo `requests/payment-processing-poc.http`.
+9. Agregar el nuevo backend al script `install:all`, `build:apis`, `start:apis` y `start:all`.
 
-## Agregar un nuevo Widget
+## 29. Pruebas
 
-1. Crear o extender el endpoint backend que entregue el agregado necesario.
-2. Consumir el endpoint desde `projects/shell/src/app/home.component.ts`.
-3. Agregar la tarjeta visual en `home.component.html`.
-4. Si el widget depende de eventos, suscribirse a `EventBusService.events$`.
-
-## Pruebas
-
-## Pruebas backend
+## 29.1 Pruebas backend
 
 Ejecutar todas:
 
@@ -615,7 +972,7 @@ Pruebas incluidas:
 | Payments | Pago puede iniciarse y confirmarse | `InitiatePaymentUseCase` + `ConfirmPaymentUseCase` |
 | Notifications | Notificación puede marcarse como leída | `MarkNotificationReadUseCase` cambia estado |
 
-## Pruebas frontend
+## 29.2 Pruebas frontend
 
 Ejecutar:
 
@@ -625,34 +982,80 @@ npm test
 
 Requiere Chrome/Chromium disponible y variable `CHROME_BIN` configurada si el binario no está en el PATH.
 
-## Validación manual recomendada
+## 30. Validación manual recomendada
 
-1. Levantar Docker Compose.
-2. Abrir `http://localhost:4200`.
-3. Presionar `Login demo`.
-4. Navegar a `Accounts` y verificar cuentas, tarjetas y beneficiarios.
-5. Navegar a `Payments`.
-6. Iniciar pago.
-7. Confirmar pago con el código retornado en pantalla.
-8. Verificar que el widget Event Bus del Shell recibe eventos.
-9. Navegar a `Notifications` y verificar eventos vivos.
-10. Consumir endpoints desde `requests/payment-processing-poc.http`.
+1. Instalar dependencias con `npm run install:all`.
+2. Levantar la solución con `npm run start:all`.
+3. Abrir `http://localhost:4200`.
+4. Verificar que el Home solicite login si no hay sesión.
+5. Iniciar sesión con `edgar / demo`.
+6. Verificar que el Home muestre las secciones federadas de Accounts, Payments y Notifications.
+7. Navegar a `Accounts` y verificar cuentas, tarjetas y beneficiarios.
+8. Registrar un beneficiario y verificar que la lista se refresque.
+9. Navegar a `Payments`.
+10. Iniciar pago y verificar que el historial se refresque con estado `INITIATED`.
+11. Confirmar pago y verificar que el historial se refresque con estado `CONFIRMED`.
+12. Verificar que el monitor Event Bus del Shell recibe eventos.
+13. Navegar a `Notifications` y verificar que se crearon notificaciones por eventos de pago.
+14. Marcar una notificación como leída y verificar que la bandeja se refresque.
+15. Abrir `http://localhost:4201`, `http://localhost:4202` y `http://localhost:4203` sin sesión y verificar que cada MFE muestre login.
+16. Consumir endpoints desde `requests/payment-processing-poc.http`.
 
-## Troubleshooting
+## 31. Comandos útiles de diagnóstico
 
-| Problema | Causa probable | Solución |
-|---|---|---|
-| Shell no carga un MFE | Remote no está levantado o puerto incorrecto | Verificar `federation.manifest.json` y puertos 4201-4203 |
-| Error CORS en remoteEntry | Servidor remoto no agrega headers | En Docker se usa Nginx con `Access-Control-Allow-Origin *` |
-| Login no funciona | API authentication no está arriba | Verificar `http://localhost:3000/health` |
-| Widgets sin datos | APIs no están levantadas | Verificar puertos 3001-3003 |
-| `npm test` falla por Chrome | ChromeHeadless no está instalado | Instalar Chromium o definir `CHROME_BIN` |
-| Docker Compose no construye | Docker no está instalado o daemon apagado | Instalar Docker Desktop / Docker Engine y ejecutar nuevamente |
-| Cambios en datasets no se ven | Backend ya cargó datos en memoria | Reiniciar el backend correspondiente |
+Verificar registry público:
 
-## Notas de diseño
+```bash
+npm config get registry
+```
 
-- La PoC evita infraestructura innecesaria: no usa Kafka, Redis, DB, Keycloak ni cloud.
-- El Event Bus está en frontend para demostrar comunicación entre MFEs sin broker.
-- Los endpoints usan envoltura uniforme `{ data, correlationId, generatedAt }`.
-- Los backends están deliberadamente separados para simular ownership por dominio.
+Debe responder:
+
+```text
+https://registry.npmjs.org/
+```
+
+Buscar referencias a registry interno:
+
+```bash
+grep -R "applied-caas-gateway" package-lock.json backends/*/package-lock.json 2>/dev/null
+```
+
+Verificar Angular CLI local:
+
+```bash
+ls -la node_modules/.bin/ng
+npx ng version
+```
+
+Verificar `tsx` en backends:
+
+```bash
+ls -la backends/authentication/node_modules/.bin/tsx
+ls -la backends/accounts/node_modules/.bin/tsx
+ls -la backends/payments/node_modules/.bin/tsx
+ls -la backends/notifications/node_modules/.bin/tsx
+```
+
+Verificar datasets:
+
+```bash
+ls -la datasets/json
+```
+
+Verificar health checks:
+
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3001/health
+curl http://localhost:3002/health
+curl http://localhost:3003/health
+```
+
+Verificar remotes:
+
+```bash
+curl http://localhost:4201/remoteEntry.json
+curl http://localhost:4202/remoteEntry.json
+curl http://localhost:4203/remoteEntry.json
+```
