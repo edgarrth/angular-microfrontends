@@ -24,7 +24,7 @@ Cada dominio backend es un servicio REST independiente:
 
 Toda la solución corre localmente, usa datasets JSON como fuente mock.
 
-## 2. Qué demuestra esta versión
+## 2. Tipos de microfrontends
 
 Esta versión demuestra dos niveles de Microfrontends:
 
@@ -62,14 +62,6 @@ La PoC está alineada a Angular 21.x:
 | Node.js recomendado | `22.16.0` |
 | Backend runtime | Node.js 22 + Express 5 |
 
-Recomendación local:
-
-```bash
-nvm install 22.16.0
-nvm use 22.16.0
-node -v
-npm -v
-```
 
 ## 4. Stack tecnológico
 
@@ -131,7 +123,7 @@ flowchart TB
     NotificationsAPI --> Datasets
 ```
 
-## 7. Estructura del proyecto
+## 6. Estructura del proyecto
 
 ```text
 payment-processing-poc/
@@ -412,17 +404,6 @@ sequenceDiagram
     Shell-->>User: Renderiza contenido protegido
 ```
 
-Protección aplicada:
-
-| Caso | Protección |
-|---|---|
-| Navegar desde Shell a `/accounts`, `/payments`, `/notifications` | `authGuard` en rutas del Shell |
-| Abrir MFE directo en `http://localhost:4201` | Validación de sesión dentro de Accounts MFE |
-| Abrir MFE directo en `http://localhost:4202` | Validación de sesión dentro de Payments MFE |
-| Abrir MFE directo en `http://localhost:4203` | Validación de sesión dentro de Notifications MFE |
-| Llamadas HTTP a APIs | `authTokenInterceptor` agrega `Authorization` |
-
-Nota de diseño: para una PoC local es aceptable usar `localStorage` y cookie JS. En producción se debería usar cookie `HttpOnly + Secure + SameSite`, OIDC real y un BFF o API Gateway.
 
 ## 12. Flujo de navegación remota
 
@@ -529,6 +510,25 @@ exposes: {
   './Component': './projects/payments/src/app/app.ts',
   './HomeSection': './projects/payments/src/app/payments-home-section.component.ts',
 }
+```
+
+```mermaid
+flowchart LR
+Browser[Browser] --> Shell[Shell :4200]
+
+    Shell --> Manifest[federation.manifest.json]
+
+    Manifest --> AccountsEntry[accounts remoteEntry.json :4201]
+    Manifest --> PaymentsEntry[payments remoteEntry.json :4202]
+    Manifest --> NotificationsEntry[notifications remoteEntry.json :4203]
+
+    AccountsEntry --> AccountsComponent[Accounts Remote Component]
+    PaymentsEntry --> PaymentsComponent[Payments Remote Component]
+    NotificationsEntry --> NotificationsComponent[Notifications Remote Component]
+
+    Shell --> AccountsComponent
+    Shell --> PaymentsComponent
+    Shell --> NotificationsComponent
 ```
 
 ## 16. Despliegue independiente
