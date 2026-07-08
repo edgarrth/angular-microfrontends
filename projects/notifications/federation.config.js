@@ -7,6 +7,7 @@ module.exports = withNativeFederation({
 
   exposes: {
     './Component': './projects/notifications/src/app/app.ts',
+    './HomeSection': './projects/notifications/src/app/notifications-home-section.component.ts',
   },
 
   shared: {

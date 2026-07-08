@@ -3,7 +3,7 @@
     <p class="eyebrow">Microfrontends + Native Federation + REST mocks</p>
     <h1>Procesamiento de pagos local y federado</h1>
     <p>
-      El Shell orquesta widgets de resumen, autenticación compartida, navegación remota y eventos publicados por los Microfrontends.
+      El Shell orquesta navegación remota, autenticación compartida, eventos y secciones de Home expuestas por cada Microfrontend.
     </p>
   </div>
 
@@ -15,36 +15,43 @@
 </section>
 
 @if (session()) {
-  <section class="grid">
-    <article class="card" *ngIf="summary$ | async as summary">
-      <span>Cuentas</span>
-      <strong>{{ summary.availableBalance | currency: 'USD' }}</strong>
-      <small>{{ summary.accounts }} cuentas · {{ summary.cards }} tarjetas</small>
-      <a routerLink="/accounts">Ver cuentas</a>
-    </article>
+  <section class="remote-dashboard">
+    <div class="dashboard-heading">
+      <p class="eyebrow dark">Home compuesto por secciones federadas</p>
+      <h2>Secciones remotas cargadas desde los MFEs</h2>
+      <p>
+        Estas secciones ya no son cards locales del Shell. Cada bloque es un componente expuesto por su Microfrontend mediante Native Federation.
+      </p>
+    </div>
 
-    <article class="card">
-      <span>Últimos pagos</span>
-      <ul *ngIf="recentPayments$ | async as payments">
-        <li *ngFor="let payment of payments">
-          {{ payment.beneficiaryName }} · {{ payment.amount | currency: payment.currency }} · {{ payment.status }}
-        </li>
-      </ul>
-      <a routerLink="/payments">Procesar pago</a>
-    </article>
+    <div class="remote-grid">
+      <article class="remote-slot">
+        @if (accountsHomeSection | async; as accountsSection) {
+          <ng-container *ngComponentOutlet="accountsSection"></ng-container>
+        } @else {
+          <p class="loading">Cargando sección remota de Accounts...</p>
+        }
+      </article>
 
-    <article class="card">
-      <span>Notificaciones</span>
-      <ul *ngIf="notifications$ | async as notifications">
-        <li *ngFor="let notification of notifications">
-          {{ notification.title }} · {{ notification.createdAt | date: 'short' }}
-        </li>
-      </ul>
-      <a routerLink="/notifications">Abrir bandeja</a>
-    </article>
+      <article class="remote-slot">
+        @if (paymentsHomeSection | async; as paymentsSection) {
+          <ng-container *ngComponentOutlet="paymentsSection"></ng-container>
+        } @else {
+          <p class="loading">Cargando sección remota de Payments...</p>
+        }
+      </article>
 
-    <article class="card events" *ngIf="events$ | async as event">
-      <span>Event Bus</span>
+      <article class="remote-slot">
+        @if (notificationsHomeSection | async; as notificationsSection) {
+          <ng-container *ngComponentOutlet="notificationsSection"></ng-container>
+        } @else {
+          <p class="loading">Cargando sección remota de Notifications...</p>
+        }
+      </article>
+    </div>
+
+    <article class="event-bus-panel" *ngIf="events$ | async as event">
+      <span>Shell-owned Event Bus monitor</span>
       <strong>{{ event.type }}</strong>
       <small>{{ event.message }}</small>
     </article>
@@ -52,6 +59,6 @@
 } @else {
   <pp-login-panel
     title="Login requerido"
-    description="Ingresa para activar la sesión compartida y cargar los widgets del dominio Payment Processing."
+    description="Ingresa para activar la sesión compartida y cargar las secciones federadas de Accounts, Payments y Notifications."
   />
 }
