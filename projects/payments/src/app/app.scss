@@ -12,3 +12,6 @@ input, select { border: 1px solid #d0d5dd; border-radius: 10px; box-sizing: bord
 small { color: #667085; }
 ul { margin: 0; padding-left: 1rem; }
 li { margin-bottom: .5rem; }
+
+.session-banner { align-items: center; display: flex; gap: .75rem; justify-content: space-between; margin-top: .75rem; }
+.session-banner button { padding: .45rem .8rem; }

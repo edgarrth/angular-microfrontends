@@ -81,3 +81,9 @@ http://127.0.0.1:4203/remoteEntry.json
 Docker Compose could not be executed because the current generation environment does not include the Docker CLI/daemon. The file `infrastructure/docker-compose.yml` was syntax-validated with YAML parsing and is ready to run in a local machine with Docker installed.
 
 Frontend Karma tests compiled but could not execute because Chrome/Chromium is not installed in this environment. The script is available as `npm test` and requires `ChromeHeadless` or `CHROME_BIN` configured.
+
+## Actualización de sesión standalone
+
+Se agregó bloqueo de contenido en Accounts, Payments y Notifications cuando se ejecutan como MFEs independientes (`4201`, `4202`, `4203`) sin sesión. Cada MFE muestra `pp-login-panel`, comparte la sesión con Shell mediante `AuthSessionService` y ahora incluye acción de logout local para limpiar la sesión compartida.
+
+También se actualizó `start:all` para compilar `shared` antes de levantar los frontends y evitar errores por exports desactualizados en `dist/shared`.

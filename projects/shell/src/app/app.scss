@@ -44,3 +44,30 @@ nav a:hover {
   min-height: calc(100vh - 64px);
   padding: 2rem;
 }
+
+.session-area {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.login,
+.logout {
+  border: 1px solid #475467;
+  border-radius: 999px;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.45rem 0.8rem;
+  text-decoration: none;
+}
+
+.logout {
+  background: transparent;
+  cursor: pointer;
+}
+
+.login:hover,
+.logout:hover {
+  background: #344054;
+}

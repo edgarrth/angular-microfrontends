@@ -1,29 +1,42 @@
-<section class="remote-page">
-  <div class="header">
-    <h2>Notifications Microfrontend</h2>
-    <p>Consume notificaciones mock y recibe eventos vivos del flujo de pagos.</p>
-  </div>
+<ng-container *ngIf="session(); else loginRequired">
+  <section class="remote-page">
+    <div class="header">
+      <h2>Notifications Microfrontend</h2>
+      <p>Consume notificaciones mock y recibe eventos vivos del flujo de pagos.</p>
+      <div class="session-banner">
+        <small>Sesión compartida activa: {{ session()?.displayName }}</small>
+        <button class="secondary" type="button" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </div>
 
-  <div class="grid">
-    <article class="card">
-      <h3>Bandeja</h3>
-      <ul *ngIf="notifications$ | async as notifications">
-        <li *ngFor="let notification of notifications">
-          <span class="badge">{{ notification.read ? 'READ' : 'UNREAD' }}</span>
-          {{ notification.title }} · {{ notification.createdAt | date: 'short' }}
-          <br />
-          <small>{{ notification.message }}</small>
-          <br />
-          <button class="secondary" type="button" (click)="markAsRead(notification)">Marcar como leída</button>
-        </li>
-      </ul>
-    </article>
+    <div class="grid">
+      <article class="card">
+        <h3>Bandeja</h3>
+        <ul *ngIf="notifications$ | async as notifications">
+          <li *ngFor="let notification of notifications">
+            <span class="badge">{{ notification.read ? 'READ' : 'UNREAD' }}</span>
+            {{ notification.title }} · {{ notification.createdAt | date: 'short' }}
+            <br />
+            <small>{{ notification.message }}</small>
+            <br />
+            <button class="secondary" type="button" (click)="markAsRead(notification)">Marcar como leída</button>
+          </li>
+        </ul>
+      </article>
 
-    <article class="card" *ngIf="liveEvents$ | async as event">
-      <h3>Eventos recibidos</h3>
-      <span class="badge">{{ event.type }}</span>
-      <p>{{ event.message }}</p>
-      <small>{{ event.occurredAt | date: 'medium' }}</small>
-    </article>
-  </div>
-</section>
+      <article class="card" *ngIf="liveEvents$ | async as event">
+        <h3>Eventos recibidos</h3>
+        <span class="badge">{{ event.type }}</span>
+        <p>{{ event.message }}</p>
+        <small>{{ event.occurredAt | date: 'medium' }}</small>
+      </article>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #loginRequired>
+  <pp-login-panel
+    title="Login requerido para Notifications"
+    description="Este Microfrontend requiere una sesión activa para consultar y marcar notificaciones."
+  />
+</ng-template>

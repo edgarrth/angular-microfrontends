@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { map, Observable, shareReplay, startWith, Subject, switchMap } from 'rxjs';
-import { ApiResult, PAYMENT_PROCESSING_API_CONFIG } from 'shared';
+import {
+  ApiResult,
+  AuthApiService,
+  AuthSessionService,
+  LoginPanelComponent,
+  PAYMENT_PROCESSING_API_CONFIG,
+} from 'shared';
 
 interface Account {
   id: string;
@@ -32,15 +38,23 @@ interface Beneficiary {
 
 @Component({
   selector: 'accounts-root',
-  imports: [AsyncPipe, CurrencyPipe, FormsModule, NgFor, NgIf],
+  imports: [AsyncPipe, CurrencyPipe, FormsModule, LoginPanelComponent, NgFor, NgIf],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
   private readonly http = inject(HttpClient);
   private readonly config = inject(PAYMENT_PROCESSING_API_CONFIG);
+  private readonly auth = inject(AuthSessionService);
+  private readonly authApi = inject(AuthApiService);
 
   private readonly refreshBeneficiaries$ = new Subject<void>();
+
+  readonly session = this.auth.session;
+
+  logout(): void {
+    this.authApi.logout().subscribe();
+  }
 
   beneficiaryAlias = 'Proveedor demo';
   beneficiaryAccount = '003-99118822';
@@ -81,7 +95,6 @@ export class App {
 
         this.beneficiaryAlias = '';
         this.beneficiaryAccount = '';
-
         this.refreshBeneficiaries$.next();
       });
   }

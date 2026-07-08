@@ -6,6 +6,21 @@ export interface UserSession {
   accessToken: string;
 }
 
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  user: {
+    id: string;
+    username: string;
+    displayName: string;
+    roles: string[];
+  };
+}
+
 export interface AccountSummary {
   totalBalance: number;
   availableBalance: number;

@@ -1,31 +1,44 @@
-<section class="remote-page">
-  <div class="header">
-    <h2>Payments Microfrontend</h2>
-    <p>Inicia y confirma pagos. Cada acción publica eventos en el Event Bus compartido.</p>
-  </div>
+<ng-container *ngIf="session(); else loginRequired">
+  <section class="remote-page">
+    <div class="header">
+      <h2>Payments Microfrontend</h2>
+      <p>Inicia y confirma pagos. Cada acción publica eventos en el Event Bus compartido.</p>
+      <div class="session-banner">
+        <small>Sesión compartida activa: {{ session()?.displayName }}</small>
+        <button class="secondary" type="button" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </div>
 
-  <div class="grid">
-    <article class="card">
-      <h3>Nuevo pago</h3>
-      <label>Monto</label>
-      <input type="number" [(ngModel)]="amount" />
-      <label>Cuenta origen</label>
-      <select [(ngModel)]="sourceAccountId"><option value="acc-001">Cuenta principal</option></select>
-      <label>Beneficiario</label>
-      <select [(ngModel)]="beneficiaryId"><option value="ben-001">Servicios Cloud SAC</option></select>
-      <button type="button" (click)="initiatePayment()">Iniciar pago</button>
-      <button class="secondary" type="button" (click)="confirmPayment()" [disabled]="!pendingPaymentId">Confirmar pago</button>
-      <small *ngIf="pendingPaymentId">Pendiente: {{ pendingPaymentId }} · Código: {{ authorizationCode }}</small>
-    </article>
+    <div class="grid">
+      <article class="card">
+        <h3>Nuevo pago</h3>
+        <label>Monto</label>
+        <input type="number" [(ngModel)]="amount" />
+        <label>Cuenta origen</label>
+        <select [(ngModel)]="sourceAccountId"><option value="acc-001">Cuenta principal</option></select>
+        <label>Beneficiario</label>
+        <select [(ngModel)]="beneficiaryId"><option value="ben-001">Servicios Cloud SAC</option></select>
+        <button type="button" (click)="initiatePayment()">Iniciar pago</button>
+        <button class="secondary" type="button" (click)="confirmPayment()" [disabled]="!pendingPaymentId">Confirmar pago</button>
+        <small *ngIf="pendingPaymentId">Pendiente: {{ pendingPaymentId }} · Código: {{ authorizationCode }}</small>
+      </article>
 
-    <article class="card">
-      <h3>Historial</h3>
-      <ul *ngIf="history$ | async as payments">
-        <li *ngFor="let payment of payments">
-          <span class="badge">{{ payment.status }}</span>
-          {{ payment.beneficiaryName }} · {{ payment.amount | currency: payment.currency }} · {{ payment.createdAt | date: 'short' }}
-        </li>
-      </ul>
-    </article>
-  </div>
-</section>
+      <article class="card">
+        <h3>Historial</h3>
+        <ul *ngIf="history$ | async as payments">
+          <li *ngFor="let payment of payments">
+            <span class="badge">{{ payment.status }}</span>
+            {{ payment.beneficiaryName }} · {{ payment.amount | currency: payment.currency }} · {{ payment.createdAt | date: 'short' }}
+          </li>
+        </ul>
+      </article>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #loginRequired>
+  <pp-login-panel
+    title="Login requerido para Payments"
+    description="Este Microfrontend requiere una sesión activa para iniciar, confirmar y consultar pagos."
+  />
+</ng-template>

@@ -6,42 +6,52 @@
       El Shell orquesta widgets de resumen, autenticación compartida, navegación remota y eventos publicados por los Microfrontends.
     </p>
   </div>
-  <button type="button" (click)="isAuthenticated() ? logout() : login()">
-    {{ isAuthenticated() ? 'Cerrar sesión' : 'Login demo' }}
-  </button>
+
+  @if (session(); as user) {
+    <strong>Sesión activa: {{ user.displayName }}</strong>
+  } @else {
+    <a routerLink="/login">Iniciar sesión</a>
+  }
 </section>
 
-<section class="grid">
-  <article class="card" *ngIf="summary$ | async as summary">
-    <span>Cuentas</span>
-    <strong>{{ summary.availableBalance | currency: 'USD' }}</strong>
-    <small>{{ summary.accounts }} cuentas · {{ summary.cards }} tarjetas</small>
-    <a routerLink="/accounts">Ver cuentas</a>
-  </article>
+@if (session()) {
+  <section class="grid">
+    <article class="card" *ngIf="summary$ | async as summary">
+      <span>Cuentas</span>
+      <strong>{{ summary.availableBalance | currency: 'USD' }}</strong>
+      <small>{{ summary.accounts }} cuentas · {{ summary.cards }} tarjetas</small>
+      <a routerLink="/accounts">Ver cuentas</a>
+    </article>
 
-  <article class="card">
-    <span>Últimos pagos</span>
-    <ul *ngIf="recentPayments$ | async as payments">
-      <li *ngFor="let payment of payments">
-        {{ payment.beneficiaryName }} · {{ payment.amount | currency: payment.currency }} · {{ payment.status }}
-      </li>
-    </ul>
-    <a routerLink="/payments">Procesar pago</a>
-  </article>
+    <article class="card">
+      <span>Últimos pagos</span>
+      <ul *ngIf="recentPayments$ | async as payments">
+        <li *ngFor="let payment of payments">
+          {{ payment.beneficiaryName }} · {{ payment.amount | currency: payment.currency }} · {{ payment.status }}
+        </li>
+      </ul>
+      <a routerLink="/payments">Procesar pago</a>
+    </article>
 
-  <article class="card">
-    <span>Notificaciones</span>
-    <ul *ngIf="notifications$ | async as notifications">
-      <li *ngFor="let notification of notifications">
-        {{ notification.title }} · {{ notification.createdAt | date: 'short' }}
-      </li>
-    </ul>
-    <a routerLink="/notifications">Abrir bandeja</a>
-  </article>
+    <article class="card">
+      <span>Notificaciones</span>
+      <ul *ngIf="notifications$ | async as notifications">
+        <li *ngFor="let notification of notifications">
+          {{ notification.title }} · {{ notification.createdAt | date: 'short' }}
+        </li>
+      </ul>
+      <a routerLink="/notifications">Abrir bandeja</a>
+    </article>
 
-  <article class="card events" *ngIf="events$ | async as event">
-    <span>Event Bus</span>
-    <strong>{{ event.type }}</strong>
-    <small>{{ event.message }}</small>
-  </article>
-</section>
+    <article class="card events" *ngIf="events$ | async as event">
+      <span>Event Bus</span>
+      <strong>{{ event.type }}</strong>
+      <small>{{ event.message }}</small>
+    </article>
+  </section>
+} @else {
+  <pp-login-panel
+    title="Login requerido"
+    description="Ingresa para activar la sesión compartida y cargar los widgets del dominio Payment Processing."
+  />
+}

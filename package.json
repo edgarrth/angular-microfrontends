@@ -19,10 +19,10 @@
     "start:accounts-mfe": "ng serve accounts --port 4201",
     "start:payments-mfe": "ng serve payments --port 4202",
     "start:notifications-mfe": "ng serve notifications --port 4203",
-    "start:api:authentication": "DATASET_PATH=./datasets/json PORT=3000 npm --prefix backends/authentication run dev",
-    "start:api:accounts": "DATASET_PATH=./datasets/json PORT=3001 npm --prefix backends/accounts run dev",
-    "start:api:payments": "DATASET_PATH=./datasets/json PORT=3002 npm --prefix backends/payments run dev",
-    "start:api:notifications": "DATASET_PATH=./datasets/json PORT=3003 npm --prefix backends/notifications run dev",
+    "start:api:authentication": "DATASET_PATH=$PWD/datasets/json PORT=3000 npm --prefix backends/authentication run dev",
+    "start:api:accounts": "DATASET_PATH=$PWD/datasets/json PORT=3001 npm --prefix backends/accounts run dev",
+    "start:api:payments": "DATASET_PATH=$PWD/datasets/json PORT=3002 npm --prefix backends/payments run dev",
+    "start:api:notifications": "DATASET_PATH=$PWD/datasets/json PORT=3003 npm --prefix backends/notifications run dev",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
     "docker:up": "docker compose -f infrastructure/docker-compose.yml up --build",
     "docker:down": "docker compose -f infrastructure/docker-compose.yml down -v",
@@ -30,7 +30,10 @@
     "test:api:accounts": "npm --prefix backends/accounts test",
     "test:api:payments": "npm --prefix backends/payments test",
     "test:api:notifications": "npm --prefix backends/notifications test",
-    "test:apis": "npm run test:api:authentication && npm run test:api:accounts && npm run test:api:payments && npm run test:api:notifications"
+    "test:apis": "npm run test:api:authentication && npm run test:api:accounts && npm run test:api:payments && npm run test:api:notifications",
+    "start:apis": "concurrently -k -n auth-api,accounts-api,payments-api,notifications-api \"npm run start:api:authentication\" \"npm run start:api:accounts\" \"npm run start:api:payments\" \"npm run start:api:notifications\"",
+    "start:frontends": "npm run build:shared && concurrently -k -n accounts-mfe,payments-mfe,notifications-mfe,shell \"npm run start:accounts-mfe\" \"npm run start:payments-mfe\" \"npm run start:notifications-mfe\" \"npm run start:shell\"",
+    "start:all": "npm run build:shared && concurrently -k -n auth-api,accounts-api,payments-api,notifications-api,accounts-mfe,payments-mfe,notifications-mfe,shell \"npm run start:api:authentication\" \"npm run start:api:accounts\" \"npm run start:api:payments\" \"npm run start:api:notifications\" \"npm run start:accounts-mfe\" \"npm run start:payments-mfe\" \"npm run start:notifications-mfe\" \"npm run start:shell\""
   },
   "prettier": {
     "printWidth": 100,
@@ -66,7 +69,6 @@
     "@angular/cli": "^21.2.18",
     "@angular/compiler-cli": "^21.2.17",
     "@types/jasmine": "~5.1.0",
-    "concurrently": "^10.0.3",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -74,6 +76,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^21.2.5",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "concurrently": "^9.2.1"
   }
 }

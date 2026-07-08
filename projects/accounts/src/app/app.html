@@ -1,36 +1,49 @@
-<section class="remote-page">
-  <div class="header">
-    <h2>Accounts Microfrontend</h2>
-    <p>Consulta cuentas, tarjetas y registra beneficiarios para el flujo de Payment Processing.</p>
-  </div>
+<ng-container *ngIf="session(); else loginRequired">
+  <section class="remote-page">
+    <div class="header">
+      <h2>Accounts Microfrontend</h2>
+      <p>Consulta cuentas, tarjetas y registra beneficiarios para el flujo de Payment Processing.</p>
+      <div class="session-banner">
+        <small>Sesión compartida activa: {{ session()?.displayName }}</small>
+        <button class="secondary" type="button" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </div>
 
-  <div class="grid">
-    <article class="card">
-      <h3>Cuentas</h3>
-      <ul *ngIf="accounts$ | async as accounts">
-        <li *ngFor="let account of accounts">
-          <span class="badge">{{ account.status }}</span>
-          {{ account.alias }} · {{ account.availableBalance | currency: account.currency }}
-        </li>
-      </ul>
-    </article>
+    <div class="grid">
+      <article class="card">
+        <h3>Cuentas</h3>
+        <ul *ngIf="accounts$ | async as accounts">
+          <li *ngFor="let account of accounts">
+            <span class="badge">{{ account.status }}</span>
+            {{ account.alias }} · {{ account.availableBalance | currency: account.currency }}
+          </li>
+        </ul>
+      </article>
 
-    <article class="card">
-      <h3>Tarjetas</h3>
-      <ul *ngIf="cards$ | async as cards">
-        <li *ngFor="let card of cards">{{ card.brand }} · {{ card.maskedNumber }} · {{ card.status }}</li>
-      </ul>
-    </article>
+      <article class="card">
+        <h3>Tarjetas</h3>
+        <ul *ngIf="cards$ | async as cards">
+          <li *ngFor="let card of cards">{{ card.brand }} · {{ card.maskedNumber }} · {{ card.status }}</li>
+        </ul>
+      </article>
 
-    <article class="card">
-      <h3>Beneficiarios</h3>
-      <ul *ngIf="beneficiaries$ | async as beneficiaries">
-        <li *ngFor="let beneficiary of beneficiaries">{{ beneficiary.alias }} · {{ beneficiary.bankName }}</li>
-      </ul>
-      <hr />
-      <input [(ngModel)]="beneficiaryAlias" placeholder="Alias" />
-      <input [(ngModel)]="beneficiaryAccount" placeholder="Cuenta destino" />
-      <button type="button" (click)="registerBeneficiary()">Registrar beneficiario</button>
-    </article>
-  </div>
-</section>
+      <article class="card">
+        <h3>Beneficiarios</h3>
+        <ul *ngIf="beneficiaries$ | async as beneficiaries">
+          <li *ngFor="let beneficiary of beneficiaries">{{ beneficiary.alias }} · {{ beneficiary.bankName }}</li>
+        </ul>
+        <hr />
+        <input [(ngModel)]="beneficiaryAlias" placeholder="Alias" />
+        <input [(ngModel)]="beneficiaryAccount" placeholder="Cuenta destino" />
+        <button type="button" (click)="registerBeneficiary()">Registrar beneficiario</button>
+      </article>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #loginRequired>
+  <pp-login-panel
+    title="Login requerido para Accounts"
+    description="Este Microfrontend requiere una sesión activa. Al iniciar sesión aquí, también quedará disponible para el Shell y los demás MFEs en localhost."
+  />
+</ng-template>

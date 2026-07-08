@@ -14,7 +14,10 @@ import {
 } from 'rxjs';
 import {
   ApiResult,
+  AuthApiService,
+  AuthSessionService,
   EventBusService,
+  LoginPanelComponent,
   PAYMENT_PROCESSING_API_CONFIG,
   PaymentEvent,
 } from 'shared';
@@ -52,7 +55,7 @@ interface PaymentNotificationRequest {
 
 @Component({
   selector: 'payments-root',
-  imports: [AsyncPipe, CurrencyPipe, DatePipe, FormsModule, NgFor, NgIf],
+  imports: [AsyncPipe, CurrencyPipe, DatePipe, FormsModule, LoginPanelComponent, NgFor, NgIf],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -60,8 +63,16 @@ export class App {
   private readonly http = inject(HttpClient);
   private readonly config = inject(PAYMENT_PROCESSING_API_CONFIG);
   private readonly eventBus = inject(EventBusService);
+  private readonly auth = inject(AuthSessionService);
+  private readonly authApi = inject(AuthApiService);
 
   private readonly refreshHistory$ = new Subject<void>();
+
+  readonly session = this.auth.session;
+
+  logout(): void {
+    this.authApi.logout().subscribe();
+  }
 
   amount = 125.5;
   beneficiaryId = 'ben-001';
@@ -148,7 +159,6 @@ export class App {
 
         this.pendingPaymentId = null;
         this.authorizationCode = '';
-
         this.refreshHistory$.next();
       });
   }

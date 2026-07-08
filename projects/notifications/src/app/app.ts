@@ -14,7 +14,10 @@ import {
 } from 'rxjs';
 import {
   ApiResult,
+  AuthApiService,
+  AuthSessionService,
   EventBusService,
+  LoginPanelComponent,
   PAYMENT_PROCESSING_API_CONFIG,
   PaymentEvent,
 } from 'shared';
@@ -29,7 +32,7 @@ interface NotificationItem {
 
 @Component({
   selector: 'notifications-root',
-  imports: [AsyncPipe, DatePipe, NgFor, NgIf],
+  imports: [AsyncPipe, DatePipe, LoginPanelComponent, NgFor, NgIf],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -37,15 +40,24 @@ export class App {
   private readonly http = inject(HttpClient);
   private readonly config = inject(PAYMENT_PROCESSING_API_CONFIG);
   private readonly eventBus = inject(EventBusService);
+  private readonly auth = inject(AuthSessionService);
+  private readonly authApi = inject(AuthApiService);
 
   private readonly refreshNotifications$ = new Subject<void>();
 
+  readonly session = this.auth.session;
+
+  logout(): void {
+    this.authApi.logout().subscribe();
+  }
+
   private readonly paymentEvents$ = this.eventBus.events$.pipe(
-    filter((event) =>
-      event.type === 'PAYMENT_INITIATED' ||
-      event.type === 'PAYMENT_CONFIRMED' ||
-      event.type === 'PAYMENT_FAILED' ||
-      event.type === 'NOTIFICATION_RECEIVED',
+    filter(
+      (event) =>
+        event.type === 'PAYMENT_INITIATED' ||
+        event.type === 'PAYMENT_CONFIRMED' ||
+        event.type === 'PAYMENT_FAILED' ||
+        event.type === 'NOTIFICATION_RECEIVED',
     ),
     map(() => void 0),
   );

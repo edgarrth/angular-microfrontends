@@ -451,6 +451,15 @@ npm install
 
 Instalar dependencias backend:
 
+Limpiar locks
+```bash
+rm -rf node_modules package-lock.json
+rm -rf backends/authentication/node_modules backends/authentication/package-lock.json
+rm -rf backends/accounts/node_modules backends/accounts/package-lock.json
+rm -rf backends/payments/node_modules backends/payments/package-lock.json
+rm -rf backends/notifications/node_modules backends/notifications/package-lock.json
+```
+
 ```bash
 npm --prefix backends/authentication install
 npm --prefix backends/accounts install
@@ -482,33 +491,42 @@ npm run start:notifications-mfe
 npm run start:shell
 ```
 
-Ejeuctar todo en conjunto:
-
-Instalar concurrently:
+Ejecutar todo junto
 ```bash
-npm install -D concurrently --registry=https://registry.npmjs.org/
-```
 
-Ejecutar:
-```bash
+npm install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
+npm --prefix backends/authentication install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
+npm --prefix backends/accounts install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
+npm --prefix backends/payments install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
+npm --prefix backends/notifications install --no-audit --no-fund --registry=https://registry.npmjs.org/ --verbose
+
 export DATASET_PATH="$(pwd)/datasets/json"
 
 npx concurrently -k \
--n auth-api,accounts-api,payments-api,notifications-api,accounts-mfe,payments-mfe,notifications-mfe,shell \
-"npm run start:api:authentication" \
-"npm run start:api:accounts" \
-"npm run start:api:payments" \
-"npm run start:api:notifications" \
-"npm run start:accounts-mfe" \
-"npm run start:payments-mfe" \
-"npm run start:notifications-mfe" \
-"npm run start:shell"
+  -n auth-api,accounts-api,payments-api,notifications-api,accounts-mfe,payments-mfe,notifications-mfe,shell \
+  "PORT=3000 DATASET_PATH=$DATASET_PATH npm --prefix backends/authentication run dev" \
+  "PORT=3001 DATASET_PATH=$DATASET_PATH npm --prefix backends/accounts run dev" \
+  "PORT=3002 DATASET_PATH=$DATASET_PATH npm --prefix backends/payments run dev" \
+  "PORT=3003 DATASET_PATH=$DATASET_PATH npm --prefix backends/notifications run dev" \
+  "npm run start:accounts-mfe" \
+  "npm run start:payments-mfe" \
+  "npm run start:notifications-mfe" \
+  "npm run start:shell"
+```
+
+o
+```bash
+npm run start:all
 ```
 
 Abrir:
 
 ```text
 http://localhost:4200
+Accounts MFE       http://localhost:4201
+Payments MFE       http://localhost:4202
+Notifications MFE  http://localhost:4203
+Shell              http://localhost:4200
 ```
 
 ## Agregar un nuevo Microfrontend
